@@ -1,0 +1,25 @@
+# https://github.com/ccrisan/motioneyeos/issues/2430
+
+/path/motioneyeos/motioneyeos/output/raspberrypi4/host/bin/arm-linux-gnueabihf-gcc -DHAVE_CONFIG_H -I. -I..  -DPKGDATADIR=\"/usr/share/libgpg-error\" -DLOCALEDIR=\"/usr/share/locale\"  -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64  -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64  -O2   -Wall -Wpointer-arith -Wno-psabi -fvisibility=hidden -c -o gpg_error-gpg-error.o `test -f 'gpg-error.c' || echo './'`gpg-error.c
+strerror-sym.c: In function ‘gpg_strerror_sym’:
+strerror-sym.c:45:13: warning: implicit declaration of function ‘errnos_msgidxof’; did you mean ‘msgidxof’? [-Wimplicit-function-declaration]
+       idx = errnos_msgidxof (code);
+             ^~~~~~~~~~~~~~~
+             msgidxof
+strerror-sym.c:47:9: error: ‘errnos_msgstr’ undeclared (first use in this function)
+  return errnos_msgstr + errnos_msgidx[idx];
+         ^~~~~~~~~~~~~
+strerror-sym.c:47:9: note: each undeclared identifier is reported only once for each function it appears in
+strerror-sym.c:47:25: error: ‘errnos_msgidx’ undeclared (first use in this function)
+  return errnos_msgstr + errnos_msgidx[idx];
+                         ^~~~~~~~~~~~~
+make[4]: *** [Makefile:1120: gpg_error-strerror-sym.o] Error 1
+
+# solve
+-- src/strerror-sym.c
+from
+idx = errnos_msgidxof (code);
+return errnos_msgstr + errnos_msgidx[idx];
+to
+idx = msgidxof (code);
+return msgstr[idx];

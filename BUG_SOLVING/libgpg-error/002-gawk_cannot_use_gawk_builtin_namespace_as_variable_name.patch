@@ -1,0 +1,27 @@
+# https://memories.tistory.com/53
+# error:
+| gawk -f ../../libgpg-error-1.24/src/mkstrtable.awk -v textidx=3 \
+| 	../../libgpg-error-1.24/src/err-sources.h.in >../../libgpg-error-1.24/src/err-sources.h
+| gawk -f ../../libgpg-error-1.24/src/mkstrtable.awk -v textidx=3 \
+| 	../../libgpg-error-1.24/src/err-codes.h.in >../../libgpg-error-1.24/src/err-codes.h
+| gawk -f ../../libgpg-error-1.24/src/mkerrnos.awk ../../libgpg-error-1.24/src/errnos.in >code-to-errno.h
+| gawk -f ../../libgpg-error-1.24/src/mkerrcodes1.awk ../../libgpg-error-1.24/src/errnos.in >_mkerrcodes.h
+| gawk -f ../../libgpg-error-1.24/src/mkstrtable.awk -v textidx=2 -v nogettext=1 \
+| 	../../libgpg-error-1.24/src/err-sources.h.in >err-sources-sym.h
+| gawk -f ../../libgpg-error-1.24/src/mkstrtable.awk -v textidx=2 -v nogettext=1 \
+| 	../../libgpg-error-1.24/src/err-codes.h.in >err-codes-sym.h
+| gawk -f ../../libgpg-error-1.24/src/mkstrtable.awk -v textidx=2 -v nogettext=1 \
+| 	-v prefix=GPG_ERR_ -v namespace=errnos_ \
+| 	../../libgpg-error-1.24/src/errnos.in >errnos-sym.h
+
+# solution:
+diff -Nura libgpg-error-1.24_old/src/Makefile.am libgpg-error-1.24_new/src/Makefile.am
+--- libgpg-error-1.24_old/src/Makefile.am	2020-11-02 16:23:56.328631000 +0900
++++ libgpg-error-1.24_new/src/Makefile.am	2020-11-05 16:10:22.284888349 +0900
+@@ -265,7 +265,7 @@
+ 
+ errnos-sym.h: Makefile mkstrtable.awk errnos.in
+ 	$(AWK) -f $(srcdir)/mkstrtable.awk -v textidx=2 -v nogettext=1 \
+-		-v prefix=GPG_ERR_ -v namespace=errnos_ \
++		-v prefix=GPG_ERR_ -v pkg_namespace=errnos_ \
+ 		$(srcdir)/errnos.in >$@

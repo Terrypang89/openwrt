@@ -1,0 +1,124 @@
+# https://memories.tistory.com/53
+# error
+In file included from ../../libgpg-error-1.24/src/strerror-sym.c:30:0:
+| ./errnos-sym.h:28:19: error: redefinition of 'msgstr'
+|  static const char msgstr[] =
+|                    ^~~~~~
+| In file included from ../../libgpg-error-1.24/src/strerror-sym.c:29:0:
+| ./err-codes-sym.h:27:19: note: previous definition of 'msgstr' was here
+|  static const char msgstr[] =
+|                    ^~~~~~
+| arm-rdk-linux-gnueabi-gcc  -march=armv7ve -mthumb -mfpu=neon-vfpv4  -mfloat-abi=hard -mcpu=cortex-a7 -fno-omit-frame-pointer -fno-optimize-sibling-calls  --sysroot=/media/gon/proj/RDK/temp/build-raspberrypi-rdk-hybrid/tmp/sysroots/raspberrypi-rdk-hybrid -DHAVE_CONFIG_H -I. -I../../libgpg-error-1.24/src -I..  -DLOCALEDIR=\"/usr/share/locale\"  -P  -Os -pipe -g -feliminate-unused-debug-types -fdebug-prefix-map=/media/gon/proj/RDK/temp/build-raspberrypi-rdk-hybrid/tmp/work/cortexa7t2hf-neon-vfpv4-rdk-linux-gnueabi/libgpg-error/1.24-r0=/usr/src/debug/libgpg-error/1.24-r0 -fdebug-prefix-map=/media/gon/proj/RDK/temp/build-raspberrypi-rdk-hybrid/tmp/sysroots/x86_64-linux= -fdebug-prefix-map=/media/gon/proj/RDK/temp/build-raspberrypi-rdk-hybrid/tmp/sysroots/raspberrypi-rdk-hybrid=  -Wall -Wpointer-arith -Wno-psabi -fvisibility=hidden -c -o gpg_error-gpg-error.o `test -f 'gpg-error.c' || echo '../../libgpg-error-1.24/src/'`gpg-error.c
+| ERROR: oe_runmake failed
+| In file included from ../../libgpg-error-1.24/src/strerror-sym.c:30:0:
+| ./errnos-sym.h:171:18: error: redefinition of 'msgidx'
+|  static const int msgidx[] =
+|                   ^~~~~~
+| In file included from ../../libgpg-error-1.24/src/strerror-sym.c:29:0:
+| ./err-codes-sym.h:408:18: note: previous definition of 'msgidx' was here
+|  static const int msgidx[] =
+|                   ^~~~~~
+| In file included from ../../libgpg-error-1.24/src/strerror-sym.c:30:0:
+| ./errnos-sym.h:318:1: error: redefinition of 'msgidxof'
+|  msgidxof (int code)
+|  ^~~~~~~~
+| In file included from ../../libgpg-error-1.24/src/strerror-sym.c:29:0:
+| ./err-codes-sym.h:792:1: note: previous definition of 'msgidxof' was here
+|  msgidxof (int code)
+|  ^~~~~~~~
+| ../../libgpg-error-1.24/src/strerror-sym.c: In function 'gpg_strerror_sym':
+| ../../libgpg-error-1.24/src/strerror-sym.c:45:13: warning: implicit declaration of function 'errnos_msgidxof' [-Wimplicit-function-declaration]
+|        idx = errnos_msgidxof (code);
+|              ^~~~~~~~~~~~~~~
+| ../../libgpg-error-1.24/src/strerror-sym.c:47:9: error: 'errnos_msgstr' undeclared (first use in this function)
+|   return errnos_msgstr + errnos_msgidx[idx];
+|          ^~~~~~~~~~~~~
+| ../../libgpg-error-1.24/src/strerror-sym.c:47:9: note: each undeclared identifier is reported only once for each function it appears in
+| ../../libgpg-error-1.24/src/strerror-sym.c:47:25: error: 'errnos_msgidx' undeclared (first use in this function)
+|   return errnos_msgstr + errnos_msgidx[idx];
+|                          ^~~~~~~~~~~~~
+| make[3]: *** [Makefile:932: gpg_error-strerror-sym.o] Error 1
+| make[3]: *** Waiting for unfinished jobs....
+
+# solution
+
+diff -Nura libgpg-error-1.24_old/src/mkerrcodes.awk libgpg-error-1.24_new/src/mkerrcodes.awk
+--- libgpg-error-1.24_old/src/mkerrcodes.awk	2013-03-16 04:24:25.000000000 +0900
++++ libgpg-error-1.24_new/src/mkerrcodes.awk	2020-11-05 15:49:01.671148368 +0900
+@@ -85,7 +85,7 @@
+ }
+ 
+ !header {
+-  sub (/\#.+/, "");
++  sub (/#.+/, "");
+   sub (/[ 	]+$/, ""); # Strip trailing space and tab characters.
+ 
+   if (/^$/)
+diff -Nura libgpg-error-1.24_old/src/mkerrcodes1.awk libgpg-error-1.24_new/src/mkerrcodes1.awk
+--- libgpg-error-1.24_old/src/mkerrcodes1.awk	2013-03-16 04:24:25.000000000 +0900
++++ libgpg-error-1.24_new/src/mkerrcodes1.awk	2020-11-05 15:49:17.651322564 +0900
+@@ -81,7 +81,7 @@
+ }
+ 
+ !header {
+-  sub (/\#.+/, "");
++  sub (/#.+/, "");
+   sub (/[ 	]+$/, ""); # Strip trailing space and tab characters.
+ 
+   if (/^$/)
+diff -Nura libgpg-error-1.24_old/src/mkerrcodes2.awk libgpg-error-1.24_new/src/mkerrcodes2.awk
+--- libgpg-error-1.24_old/src/mkerrcodes2.awk	2013-03-16 04:24:25.000000000 +0900
++++ libgpg-error-1.24_new/src/mkerrcodes2.awk	2020-11-05 15:49:30.807464810 +0900
+@@ -91,7 +91,7 @@
+ }
+ 
+ !header {
+-  sub (/\#.+/, "");
++  sub (/#.+/, "");
+   sub (/[ 	]+$/, ""); # Strip trailing space and tab characters.
+ 
+   if (/^$/)
+diff -Nura libgpg-error-1.24_old/src/mkerrnos.awk libgpg-error-1.24_new/src/mkerrnos.awk
+--- libgpg-error-1.24_old/src/mkerrnos.awk	2013-03-16 04:24:25.000000000 +0900
++++ libgpg-error-1.24_new/src/mkerrnos.awk	2020-11-05 15:49:40.459568515 +0900
+@@ -83,7 +83,7 @@
+ }
+ 
+ !header {
+-  sub (/\#.+/, "");
++  sub (/#.+/, "");
+   sub (/[ 	]+$/, ""); # Strip trailing space and tab characters.
+ 
+   if (/^$/)
+
+diff -Nura libgpg-error-1.24_old/src/mkstrtable.awk libgpg-error-1.24_new/src/mkstrtable.awk
+--- libgpg-error-1.24_old/src/mkstrtable.awk	2013-03-16 04:24:25.000000000 +0900
++++ libgpg-error-1.24_new/src/mkstrtable.awk	2020-11-05 16:08:44.924464226 +0900
+@@ -77,7 +77,7 @@
+ #
+ # The variable prefix can be used to prepend a string to each message.
+ #
+-# The variable namespace can be used to prepend a string to each
++# The variable pkg_namespace can be used to prepend a string to each
+ # variable and macro name.
+ 
+ BEGIN {
+@@ -102,7 +102,7 @@
+       print "/* The purpose of this complex string table is to produce";
+       print "   optimal code with a minimum of relocations.  */";
+       print "";
+-      print "static const char " namespace "msgstr[] = ";
++      print "static const char " pkg_namespace "msgstr[] = ";
+       header = 0;
+     }
+   else
+@@ -110,7 +110,7 @@
+ }
+ 
+ !header {
+-  sub (/\#.+/, "");
++  sub (/#.+/, "");
+   sub (/[ 	]+$/, ""); # Strip trailing space and tab characters.
+ 
+   if (/^$/)
+

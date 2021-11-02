@@ -1,0 +1,51 @@
+# https://forum.openwrt.org/t/tools-bison-lib-fseterr-c-build-problems-on-18-06-0-due-to-glibc-2-28-changes/18926
+# error
+gcc    -I. -I./lib -I. -I./lib -I/flower/openwrt.git/staging_dir/host/include   -O2 -I/flower/openwrt.git/staging_dir/host/include  -MT lib/fseterr.o -MD -MP -MF $depbase.Tpo -c -o lib/fseterr.o lib/fseterr.c &&\
+mv -f $depbase.Tpo $depbase.Po
+lib/fseterr.c: In function 'fseterr':
+lib/fseterr.c:77:3: error: #error "Please port gnulib fseterr.c to your platform! Look at the definitions of ferror and clearerr on your system, then report this to bug-gnulib."
+  #error "Please port gnulib fseterr.c to your platform! Look at the definitions of ferror and clearerr on your system, then report this to bug-gnulib."
+   ^~~~~
+make[6]: *** [Makefile:3461: lib/fseterr.o] Error 1
+make[6]: Leaving directory '/flower/openwrt.git/build_dir/host/bison-3.0.4'
+make[5]: *** [Makefile:4522: all-recursive] Error 1
+make[5]: Leaving directory '/flower/openwrt.git/build_dir/host/bison-3.0.4'
+make[4]: *** [Makefile:2625: all] Error 2
+make[4]: Leaving directory '/flower/openwrt.git/build_dir/host/bison-3.0.4'
+make[3]: *** [Makefile:31: /flower/openwrt.git/build_dir/host/bison-3.0.4/.built] Error 2
+make[3]: Leaving directory '/flower/openwrt.git/tools/bison'
+Command exited with non-zero status 2
+time: tools/bison/compile#10.81#1.10#11.93
+make[2]: *** [tools/Makefile:154: tools/bison/compile] Error 2
+make[2]: Leaving directory '/flower/openwrt.git'
+make[1]: *** [tools/Makefile:150: /flower/openwrt.git/staging_dir/target-mipsel_24kc_musl/stamp/.tools_compile_yynyyyyynyyyyynyynyyyyynyyyyyyyyyyyyyyynyynynnyyynnyy] Error 2
+make[1]: Leaving directory '/flower/openwrt.git'
+make: *** [/flower/openwrt.git/include/toplevel.mk:218: world] Error 2```
+
+# solution:
+--- a/lib/stdio-impl.h
++++ b/lib/stdio-impl.h
+@@ -18,6 +18,12 @@
+    the same implementation of stdio extension API, except that some fields
+    have different naming conventions, or their access requires some casts.  */
+
++/* Glibc 2.28 made _IO_IN_BACKUP private.  For now, work around this
++   problem by defining it ourselves.  FIXME: Do not rely on glibc
++   internals.  */
++#if !defined _IO_IN_BACKUP && defined _IO_EOF_SEEN
++# define _IO_IN_BACKUP 0x100
++#endif
+
+ /* BSD stdio derived implementations.  */
+
+--- a/lib/fseterr.c
++++ b/lib/fseterr.c
+@@ -29,7 +29,7 @@
+   /* Most systems provide FILE as a struct and the necessary bitmask in
+      <stdio.h>, because they need it for implementing getc() and putc() as
+      fast macros.  */
+-#if defined _IO_ftrylockfile || __GNU_LIBRARY__ == 1 /* GNU libc, BeOS, Haiku, Linux libc5 */
++#if defined _IO_EOF_SEEN || __GNU_LIBRARY__ == 1 /* GNU libc, BeOS, Haiku, Linux libc5 */
+   fp->_flags |= _IO_ERR_SEEN;
+ #elif defined __sferror || defined __DragonFly__ /* FreeBSD, NetBSD, OpenBSD, DragonFly, Mac OS X, Cygwin */
+   fp_->_flags |= __SERR;
